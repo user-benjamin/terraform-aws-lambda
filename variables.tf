@@ -77,12 +77,6 @@ variable "tags" {
   default     = {}
 }
 
-variable "tracing_enable" {
-  description = "Whether to enable XRay tracing for the Lambda function"
-  type        = bool
-  default     = false
-}
-
 variable "tracing_mode" {
   description = "XRay tracing mode for the Lambda function"
   type        = string
