@@ -13,7 +13,10 @@ resource "aws_lambda_function" "this" {
   environment {
     variables = var.environment_variables
   }
-
+  tracing_config {
+    enable = var.tracing_enable
+    mode = var.tracing_mode
+  }
   tags = var.tags
 }
 
@@ -43,6 +46,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 
 # CloudWatch Log Group for Lambda
 resource "aws_cloudwatch_log_group" "lambda" {
+  count      = var.enable_logs ? 1 : 0
   name              = "/aws/lambda/${var.function_name}"
   retention_in_days = var.log_retention_in_days
   tags              = var.tags
