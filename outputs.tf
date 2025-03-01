@@ -20,7 +20,7 @@ output "lambda_role_arn" {
 
 output "cloudwatch_log_group_name" {
   description = "Name of the CloudWatch Log Group for the Lambda function"
-  value       = aws_cloudwatch_log_group.lambda.name
+  value       = aws_cloudwatch_log_group.lambda[count.index].name
 }
 
 output "eventbridge_rule_arn" {
