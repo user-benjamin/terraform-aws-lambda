@@ -1,0 +1,33 @@
+name: Generate Terraform Docs
+
+# This workflow is part of the CI/CD pipeline and automatically updates documentation when Terraform files change.
+# For local documentation preview, use the Makefile instead (e.g., `make docs`).
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.tf'
+      - '.github/workflows/terraform-docs.yml'
+  workflow_dispatch:
+
+jobs:
+  docs:
+    name: Generate Terraform Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate TF Docs
+        uses: terraform-docs/gh-actions@v1.0.0
+        with:
+          working-dir: .
+          output-file: README.md
+          output-method: inject
+          git-push: true
+          git-commit-message: "docs: Update Terraform module documentation"

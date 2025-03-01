@@ -1,0 +1,61 @@
+name: Terraform Lint
+
+# This workflow is part of the CI/CD pipeline and runs automatically on PRs and merges.
+# For local development, use the Makefile instead (e.g., `make lint`).
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  terraform-lint:
+    name: Terraform Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.0.0
+          terraform_wrapper: false
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: |
+          for dir in $(find . -type f -name "*.tf" -not -path "*/\.*" | xargs -I {} dirname {} | sort -u); do
+            echo "Initializing Terraform in $dir"
+            cd $dir
+            terraform init -backend=false
+            cd $GITHUB_WORKSPACE
+          done
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          for dir in $(find . -type f -name "*.tf" -not -path "*/\.*" | xargs -I {} dirname {} | sort -u); do
+            echo "Validating Terraform in $dir"
+            cd $dir
+            terraform validate
+            cd $GITHUB_WORKSPACE
+          done
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v3
+        with:
+          tflint_version: v0.46.1
+
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint --recursive --format=compact

@@ -1,0 +1,74 @@
+name: Terraform Test
+
+# This workflow is part of the CI/CD pipeline and runs automatically on PRs and merges.
+# For local development, use the Makefile instead (e.g., `make test`).
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  terraform-test:
+    name: Terraform Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.0.0
+          terraform_wrapper: false
+
+      - name: Install Terratest dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y golang-go
+          go version
+
+      - name: Run Terraform Tests
+        run: |
+          # Check if tests directory exists
+          if [ -d "./tests" ]; then
+            cd ./tests
+            go test -v ./...
+          else
+            echo "No tests directory found. Skipping tests."
+          fi
+        continue-on-error: true
+
+  examples-test:
+    name: Test Examples
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example:
+          - basic
+          # Add more examples as they are created
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.0.0
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        run: |
+          cd examples/${{ matrix.example }}
+          terraform init -backend=false
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          cd examples/${{ matrix.example }}
+          terraform plan -input=false -lock=false

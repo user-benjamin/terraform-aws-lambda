@@ -1,0 +1,36 @@
+# # .github/workflows/adr-check.yml
+# name: ADR Compliance Check
+
+# on:
+#   pull_request:
+#     branches: [ main ]
+#     paths:
+#       - '**/*.tf'
+#       - 'docs/adr/**.md'
+
+# jobs:
+#   check-adr:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Validate ADR Compliance for Terraform Changes
+#         run: |
+#           # Get list of changed files in this PR
+#           CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+#           echo "Changed files: $CHANGED_FILES"
+
+#           # Check if any Terraform files were changed
+#           TF_CHANGED=$(echo "$CHANGED_FILES" | grep -E '\.tf$' || true)
+
+#           # Check if any ADR files were changed
+#           ADR_CHANGED=$(echo "$CHANGED_FILES" | grep -E '^docs/adr/[0-9]{4}-.+\.md$' || true)
+
+#           if [ -n "$TF_CHANGED" ] && [ -z "$ADR_CHANGED" ]; then
+#             echo "❌ Terraform changes detected without corresponding ADR updates."
+#             echo "📝 Please update or create an ADR in '/docs/adr/' following the naming convention '####-title.md'."
+#             exit 1
+#           fi
+
+#           echo "✅ ADR compliance check passed."

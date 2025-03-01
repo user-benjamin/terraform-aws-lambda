@@ -1,0 +1,63 @@
+name: Generate Terraform Diagrams
+
+# This workflow is part of the CI/CD pipeline and automatically updates diagrams when Terraform files change.
+# For local diagram preview, use the Makefile instead (e.g., `make diagrams`).
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.tf'
+      - 'examples/**'
+      - '.github/workflows/terraform-diagrams.yml'
+      - 'docs/scripts/generate_diagrams.sh'
+  workflow_dispatch:
+
+jobs:
+  generate-diagrams:
+    name: Generate Terraform Diagrams
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          
+      - name: Install terraform-visual
+        run: npm install -g terraform-visual
+      
+      - name: Make script executable
+        run: chmod +x ./docs/scripts/generate_diagrams.sh
+      
+      - name: Generate diagrams
+        run: ./docs/scripts/generate_diagrams.sh
+        
+      - name: Update README with diagrams
+        run: |
+          # Check if main module diagram exists
+          if [ -f "docs/diagrams/main_module.md" ]; then
+            # Extract diagram content
+            DIAGRAM_CONTENT=$(cat docs/diagrams/main_module.md)
+            
+            # Update README.md with diagram content
+            if grep -q "<!-- BEGIN_TF_DIAGRAMS -->" README.md && grep -q "<!-- END_TF_DIAGRAMS -->" README.md; then
+              # Replace existing diagram section
+              sed -i '/<!-- BEGIN_TF_DIAGRAMS -->/,/<!-- END_TF_DIAGRAMS -->/c\<!-- BEGIN_TF_DIAGRAMS -->\n'"$DIAGRAM_CONTENT"'\n<!-- END_TF_DIAGRAMS -->' README.md
+            else
+              # Add diagram section if it doesn't exist
+              echo -e "\n## Module Diagram\n\n<!-- BEGIN_TF_DIAGRAMS -->\n$DIAGRAM_CONTENT\n<!-- END_TF_DIAGRAMS -->" >> README.md
+            fi
+          fi
+      
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "docs: Update Terraform diagrams"
+          file_pattern: "docs/diagrams/* README.md"
