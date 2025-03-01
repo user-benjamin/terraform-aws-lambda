@@ -45,7 +45,6 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 
 # CloudWatch Log Group for Lambda
 resource "aws_cloudwatch_log_group" "lambda" {
-  count      = var.enable_logs ? 1 : 0
   name              = "/aws/lambda/${var.function_name}"
   retention_in_days = var.log_retention_in_days
   tags              = var.tags

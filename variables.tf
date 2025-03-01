@@ -77,12 +77,6 @@ variable "tags" {
   default     = {}
 }
 
-variable "enable_logs" {
-  description = "Whether to enable CloudWatch logs for the Lambda function"
-  type        = bool
-  default     = true
-}
-
 variable "tracing_enable" {
   description = "Whether to enable XRay tracing for the Lambda function"
   type        = bool
