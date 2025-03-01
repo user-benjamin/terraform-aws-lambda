@@ -14,7 +14,6 @@ resource "aws_lambda_function" "this" {
     variables = var.environment_variables
   }
   tracing_config {
-    enable = var.tracing_enable
     mode = var.tracing_mode
   }
   tags = var.tags
